@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เครื่องคำนวณ T-Score</title>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e3f2fd;
+            color: #333;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1565c0;
+            font-size: 2.5em;
+        }
+
+        h2 {
+            text-align: center;
+            color: #1976d2;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            background: #1976d2;
+            color: #fff;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        button:hover {
+            background: #1565c0;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .result {
+            text-align: center;
+            font-size: 1.5em;
+            color: #388e3c;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1> T-Score Dek68</h1>
+
+        <div id="step1">
+            <h2>ขั้นตอนที่ 1: เลือกวิชา</h2>
+            <select id="subject-select">
+                <option value="">-- เลือกวิชาที่ต้องการ --</option>
+                <option value="TGAT">TGAT</option>
+                <option value="TGAT1">TGAT1</option>
+                <option value="TGAT2">TGAT2</option>
+                <option value="TGAT3">TGAT3</option>
+                <option value="TPAT2">TPAT2</option>
+                <option value="TPAT21">TPAT21</option>
+                <option value="TPAT22">TPAT22</option>
+                <option value="TPAT23">TPAT23</option>
+                <option value="TPAT3">TPAT3</option>
+                <option value="TPAT4">TPAT4</option>
+                <option value="TPAT5">TPAT5</option>
+            </select>
+            <button onclick="goToStep2()">ถัดไป</button>
+        </div>
+
+        <div id="step2" style="display: none;">
+            <h2>ขั้นตอนที่ 2: ใส่คะแนนที่ได้</h2>
+            <label for="score">คะแนนที่ได้ (Xi):</label>
+            <input type="number" id="score" placeholder="ใส่คะแนนของคุณ">
+
+            <div class="button-group">
+                <button onclick="calculateTScore()">คำนวณ T-Score</button>
+                <button onclick="goBack()">ย้อนกลับ</button>
+            </div>
+        </div>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const subjectData = {
+            "TGAT": { mean: 49.675, sd: 15.733 },
+            "TGAT1": { mean: 40.417, sd: 18.573 },
+            "TGAT2": { mean: 46.473, sd: 15.733 },
+            "TGAT3": { mean: 62.134, sd: 12.473 },
+            "TPAT2": { mean: 48.434, sd: 9.533 },
+            "TPAT21": { mean: 51.063, sd: 8.666 },
+            "TPAT22": { mean: 55.116, sd: 11.194 },
+            "TPAT23": { mean: 63.170, sd: 18.436 },
+            "TPAT3": { mean: 44.055, sd: 10.619 },
+            "TPAT4": { mean: 57.119, sd: 11.245 },
+            "TPAT5": { mean: 65.194, sd: 11.080 }
+        };
+
+        function goToStep2() {
+            const subject = document.getElementById('subject-select').value;
+            if (subject) {
+                document.getElementById('step1').style.display = 'none';
+                document.getElementById('step2').style.display = 'block';
+            } else {
+                alert('กรุณาเลือกวิชา');
+            }
+        }
+
+        function goBack() {
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step1').style.display = 'block';
+        }
+
+        function calculateTScore() {
+            const subject = document.getElementById('subject-select').value;
+            const rawScore = parseFloat(document.getElementById('score').value);
+
+            if (!subject || isNaN(rawScore)) {
+                alert('กรุณาเลือกวิชาและใส่คะแนนที่ถูกต้อง');
+                return;
+            }
+
+            const mean = subjectData[subject].mean;
+            const sd = subjectData[subject].sd;
+            const tScore = 50 + (10 * (rawScore - mean) / sd);
+
+            document.getElementById('result').innerText = `T-Score สำหรับ ${subject}: ${tScore.toFixed(2)}`;
+        }
+    </script>
+</body>
+</html>
